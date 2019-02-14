@@ -1,5 +1,6 @@
 <?php
 include 'Producto.php';
+include 'variables.php';
 function crearBD()
 {
 	global $nombre_bd,$pwd_bd,$usuario_bd, $servername;
@@ -46,14 +47,55 @@ function grabarProducto($nombre_producto,$precio_producto, $stock_producto )
     echo "Connection failed: " . $e->getMessage();
     }
 }
+function actualizarStock($id)
+{
+
+	global $nombre_bd,$pwd_bd,$usuario_bd, $servername;
+	echo "nombre:".$nombre_bd;
+	echo "Pwd:".$pwd_bd;
+	echo "Usuario:".$usuario_bd;
+	try {
+	$conexion=new PDO("mysql:host=$servername; dbname=$nombre_bd", $usuario_bd, $pwd_bd);
+	$sql="UPDATE `tienda` SET stock=stock-1 where id='$id'";
+	
+	echo($sql);
+	$conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	$conexion->exec($sql);
+	
+	}
+	catch(PDOException $e)
+    {
+    echo "Connection failed: " . $e->getMessage();
+    }
+}
 function devolverProductos()
 {
 	$lista_productos=array() ;
-	$producto1=new Producto(1,"Portatil", 20, 10);
-	$producto2=new Producto(2,"Tele", 200, 15);
-	$producto3=new Producto(3,"Raton", 10, 100);
+	global $nombre_bd,$pwd_bd,$usuario_bd, $servername;
+	try {
+	$conexion=new PDO("mysql:host=$servername; dbname=$nombre_bd", $usuario_bd, $pwd_bd);
+	$sql="SELECT * FROM tienda";
+	$resultado=$conexion->query($sql);
+	$lista_filas=$resultado->fetchAll();
+	for($i=0; $i<count($lista_filas); $i++)
+	{
+		$fila=$lista_filas[$i];
+		$id=$fila['id'];
+		$nombre=$fila['nombre'];
+		$precio=$fila['precio'];
+		$stock=$fila['stock'];
+		$producto=new Producto($id, $nombre, $precio, $stock);
+		array_push($lista_productos, $producto);
+	}
+	$conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	}
+	catch(PDOException $e)
+    {
+    echo "Connection failed: " . $e->getMessage();
+    }
+	
 
-	array_push($lista_productos, $producto1, $producto2, $producto3);
+	
 	return $lista_productos;
 //Conexion
 //SELECT
